@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Samurai Duel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Press Start 2P', cursive;
+    }
+    canvas {
+      width: 100vw;
+      height: 100vh;
+    }
+
+    body {
+      background-color: black;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    .menu {
+      height: 100vh;
+      width: 100vw;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      background-image: url('./asia-background.gif'); /* Set the path to your background image */
+      background-size: cover; /* Cover the entire element with the background image */
+      background-position: center; /* Center the background image */
+      padding: 50px; /* Adjust padding as needed */
+    }
+
+    .menu-title {
+      font-size: 36px;
+      color: orange;
+      margin-bottom: 30px;
+    }
+
+    .menu-button {
+      background-color: orange;
+      color: black;
+      border: 2px solid orange;
+      padding: 10px 20px;
+      font-size: 24px;
+      margin: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .menu-button:hover {
+      background-color: black;
+      color: orange;
+    }
+
+    .game-elements {
+      visibility: hidden;
+    }
+
+    .options {
+      display: none;
+      margin-top: 30px;
+    }
+    .controls {
+      color: white;
+    }
+
+    .option-button {
+      background-color: orange;
+      color: black;
+      border: 2px solid orange;
+      padding: 10px 20px;
+      font-size: 20px;
+      margin: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .control-button {
+      background-color: orange;
+      color: black;
+      border: 2px solid orange;
+      padding: 10px 20px;
+      font-size: 20px;
+      margin: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    h3#blue {
+     color: blue;
+    }
+
+    h3#red {
+      color: red;
+    }
+
+    .option-button:hover {
+      background-color: black;
+      color: orange;
+    }
+
+    #videoContainer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none; /* Disable mouse interaction */
+      display: none; /* Initially hide the video container */
+    }
+    .gameover-c{
+      position: absolute;
+      background-color: white;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      left: 50%;
+      padding: 16px;
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+      border-radius: 5px;
+      display: none;
+    }
+    #restartBtn{
+      margin-top: 12px;
+      background-color: black;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    
+  </style>
+</head>
+
+<body>
+  
+ <div class="gameover-c">
+  <label id="game-over">Game Over</label>
+  <button onclick="restartGame()" id="restartBtn">again?</button>
+</div> 
+
+  <div class="menu" id="menu">
+    <div class="menu-title">Samurai Duel</div>
+    <button class="menu-button" onclick="startGame()">Play Game</button>
+    <button class="menu-button" onclick="showControls()">Controls</button>
+    <button class="menu-button" onclick="exitGame()">Exit</button>
+    <div id="controls" class="controls" style="display: none;">
+        <h3 id="red">Red</h3>
+        <p>Use the "A" key to move left</p>
+        <p>Use the "D" key to mover right</p>
+        <p>Use the "W" key to jump</p>
+        <p>Use the "S" key to attack.</p>
+        <h3 id="blue">Blue</h3>
+        <p>Use the "Left Arrow" key to move left</p>
+        <p>Use the "Right Arrow" key to mover right</p>
+        <p>Use the "Up Arrow" key to jump</p>
+        <p>Use the "Down Arrow" key to attack.</p>
+        <button class="menu-button" onclick="hideControls()">Close Controls</button>
+    </div>
+  </div>
+
+  <div class="game-elements" style="position: relative; display: inline-block">
+    <div
+      style="
+        position: absolute;
+        display: flex;
+        width: 100%;
+        align-items: center;
+        padding: 20px;
+      "
+    >
+      <div
+        style="
+          position: relative;
+          width: 100%;
+          display: flex;
+          justify-content: flex-end;
+          border-top: 4px solid white;
+          border-left: 4px solid white;
+          border-bottom: 4px solid white;
+        "
+      >
+        <div style="background-color: red; height: 30px; width: 100%"></div>
+        <div
+          id="playerHealth"
+          style="
+            position: absolute;
+            background: #818cf8;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+          "
+        ></div>
+      </div>
+
+      <div
+        id="timer"
+        style="
+          background-color: black;
+          width: 100px;
+          height: 50px;
+          flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          border: 4px solid white;
+        "
+      >
+        10
+      </div>
+
+      <div
+        style="
+          position: relative;
+          width: 100%;
+          border-top: 4px solid white;
+          border-bottom: 4px solid white;
+          border-right: 4px solid white;
+        "
+      >
+        <div style="background-color: red; height: 30px"></div>
+        <div
+          id="enemyHealth"
+          style="
+            position: absolute;
+            background: #818cf8;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+          "
+        ></div>
+      </div>
+      <div></div>
+    </div>
+    <div
+      id="videoContainer"
+      style="
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      "
+    >
+      <video id="introVideo" controls style="width: 100%; height: 100%; object-fit: cover;">
+        <source src="Videos-and-Music/intro.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+    </div>
+    <div
+      id="displayText"
+      style="
+        position: absolute;
+        color: white;
+        align-items: center;
+        justify-content: center;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: none;
+        font-size: 36px;
+        font-weight: bold;
+      "
+    >
+      
+    </div>
+    <canvas></canvas>
+  </div>
+
+  <audio id="bgMusic" loop>
+    <source src="./Videos-and-Music/Street Fighter - Cammy's Theme  Epic Rock Cover.mp3" type="audio/mp3">
+    Your browser does not support the audio element.
+  </audio>
+  <audio id="spaceKeyPressSound" src="Videos-and-Music/slash.mp3"></audio>
+  <audio id="downArrowKeyPressSound" src="Videos-and-Music/slash2.mp3"></audio>
+  <audio id="countdownSound" src="Videos-and-Music/fight-sound-effect.mp3"></audio>
+  <audio id="fightSound" src="Videos-and-Music/fight-sound-effect.mp3"></audio>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js" integrity="sha512-H6cPm97FAsgIKmlBA4s774vqoN24V5gSQL4yBTDOY2su2DeXZVhQPxFK4P6GPdnZqM9fg1G3cMv5wD7e6cFLZQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/classes.js"></script>
+  <script src="index.js"></script>
+
+  <script>
+    var musicPlaying = false;
+    var bgMusic = document.getElementById('bgMusic');
+    var gameStarted = false;
+
+    const spaceKeyPressSound = document.getElementById('spaceKeyPressSound');
+    const downArrowKeyPressSound = document.getElementById('downArrowKeyPressSound');
+
+    window.addEventListener('keydown', function(event) {
+        if (event.key === 's') {
+            spaceKeyPressSound.currentTime = 0;
+            spaceKeyPressSound.play();
+        }
+    });
+
+    window.addEventListener('keydown', function(event) {
+        if (event.key === 'ArrowDown') {
+            downArrowKeyPressSound.currentTime = 0;
+            downArrowKeyPressSound.play();
+        }
+    });
+
+    function startGame() {
+      document.querySelector('.menu').style.display = 'none';
+      document.querySelector('.game-elements').style.visibility = 'visible';
+      document.getElementById('displayText').style.display = 'block';
+      document.querySelector('canvas').style.display = 'block';
+      
+      // Start playing the video
+      var video = document.getElementById('introVideo');
+      var videoContainer = document.getElementById('videoContainer');
+      videoContainer.style.display = 'block';
+      video.play();
+      
+      // Check if background music is not already playing
+      if (!musicPlaying) {
+        // Play the background music
+        playBackgroundMusic("./Videos-and-Music/Street Fighter - Cammy's Theme  Epic Rock Cover.mp3");
+      }
+
+      if (!gameStarted) {
+        gameStarted = true;
+        video.addEventListener('ended', function() {
+          videoContainer.style.display = 'none';
+          
+          // If music is already playing, resume it
+          if (musicPlaying) {
+            bgMusic.play();
+          }
+          
+          // Display countdown and start game logic
+          setTimeout(function() {
+            document.getElementById('displayText').innerHTML = '3';
+          setTimeout(function() {
+            document.getElementById('displayText').innerHTML = '2';
+            setTimeout(function() {
+              document.getElementById('displayText').innerHTML = '1';
+              setTimeout(function() {
+                document.getElementById('displayText').innerHTML = 'FIGHT!';
+                setTimeout(function() {
+                  document.getElementById('displayText').style.display = 'none';
+                }, 1000);
+              }, 1000);
+            }, 1000);
+          }, 1000);
+        }, 1000);
+          
+          // Play countdown sound effect
+          const countdownSound = document.getElementById('countdownSound');
+          countdownSound.currentTime = 0;
+          countdownSound.play();
+        });
+      }
+
+      // Request full screen
+      if (document.body.requestFullscreen) {
+        document.body.requestFullscreen();
+      } else if (document.body.webkitRequestFullscreen) { /* Safari */
+        document.body.webkitRequestFullscreen();
+      } else if (document.body.msRequestFullscreen) { /* IE11 */
+        document.body.msRequestFullscreen();
+      }
+    }
+
+    window.addEventListener('keydown', function(event) {
+      if (event.key === ' ') { // Spacebar key
+        document.getElementById('introVideo').currentTime = document.getElementById('introVideo').duration;
+      }
+    });
+
+    function exitGame() {
+      bgMusic.pause();
+      window.close();
+    }
+
+    function showControls() {
+      document.getElementById('controls').style.display = 'block';
+    }
+
+    function hideControls() {
+      document.getElementById('controls').style.display = 'none';
+    }
+
+    function playBackgroundMusic(audioFile) {
+      // Set the source of the background music
+      bgMusic.src = audioFile;
+      
+      // Play the background music
+      bgMusic.play();
+      
+      // Set the flag indicating music is playing
+      musicPlaying = true;
+      
+      // Log a message to the console for debugging
+      console.log("Background music started playing.");
+    }
+  </script>
+</body>
+</html>
